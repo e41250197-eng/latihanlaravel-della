@@ -50,6 +50,13 @@ return view('greeting', [
 ]);
 });
 
+Route::get('/home', function () {
+    return view('home', [
+        'role' => 'admin',
+        'status' => 'completed'
+    ]);
+});
+
 route::fallback(function () {
     return "404 - Not Found";
 });
