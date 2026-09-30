@@ -1,19 +1,19 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FormValidationController;
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\LaporanPenjualanController;
 use App\Http\Controllers\ProdukController;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 
-// Halaman Utama
+// ==========================================
+// HALAMAN UTAMA & ROUTING DASAR
+// ==========================================
 Route::get('/', function () {
-    return view('dashboard_pos', [
-        'nama_pegawai' => 'Della',
-        'shift' => 'Pagi (08.00 - 16.00)',
-    ]);
+    return view('welcome');
 });
 
 // 1. Basic Routing
@@ -39,18 +39,14 @@ Route::get('/product/{id}', function ($id) {
 })->whereNumber('id');
 
 // 3. Named Routes
-Route::get('/Dashboard', function () {
-    return 'Ini Halaman Dashboard';
-})->name('Dashboard');
-
 Route::get('/tes-dashboard', function () {
-    $url = route('Dashboard');
+    $url = route('dashboard');
     return 'URL dari route yang bernama Dashboard adalah: ' . $url;
 });
 
 Route::get('/admin/dashboard', function () {
     return "<h1>Halaman Dashboard Admin</h1><p>Berhasil diakses menggunakan Named Route.</p>";
-})->name('dashboard');
+});
 
 // 4. Route Groups & Prefix
 Route::prefix('admin')->group(function () {
@@ -158,8 +154,9 @@ Route::get('/laporan', LaporanPenjualanController::class);
 Route::get('/produk', [ProdukController::class, 'index']);
 Route::get('/produk/{id}', [ProdukController::class, 'show']);
 
-//acara 17
-// 1. Insert Data (Create)
+// ==========================================
+// ACARA 17: QUERY BUILDER
+// ==========================================
 Route::get('/qb-insert', function () {
     $id = DB::table('users')->insertGetId([
         'name' => 'Jane Doe',
@@ -171,13 +168,11 @@ Route::get('/qb-insert', function () {
     return "Data user berhasil ditambahkan dengan ID: " . $id;
 });
 
-// 2. Read (Mengambil Data & Kolom Tertentu)
 Route::get('/qb-get', function () {
     $users = DB::table('users')->select('id', 'name', 'email')->get();
     return response()->json($users);
 });
 
-// 3. Update Data
 Route::get('/qb-update', function () {
     DB::table('users')
         ->where('name', 'Jane Doe')
@@ -185,7 +180,6 @@ Route::get('/qb-update', function () {
     return "Data user Jane Doe berhasil diperbarui.";
 });
 
-// 4. Delete Data
 Route::get('/qb-delete', function () {
     DB::table('users')
         ->where('name', 'Jane Doe Updated')
@@ -193,7 +187,6 @@ Route::get('/qb-delete', function () {
     return "Data user berhasil dihapus.";
 });
 
-// 5. Agregat & Pluck
 Route::get('/qb-agregat', function () {
     $totalUsers = DB::table('users')->count();
     $daftarNama = DB::table('users')->pluck('name');
@@ -203,10 +196,9 @@ Route::get('/qb-agregat', function () {
     ]);
 });
 
-
-//acara 18
-// 1. CREATE
-// a. Menggunakan create() (Mass Assignment)
+// ==========================================
+// ACARA 18: ELOQUENT ORM (PART 1)
+// ==========================================
 Route::get('/eloquent-create', function () {
     $user = User::create([
         'name' => 'John Doe',
@@ -216,7 +208,6 @@ Route::get('/eloquent-create', function () {
     return "User berhasil dibuat via create() dengan ID: " . $user->id;
 });
 
-// b. Menggunakan save() (Instance Model)
 Route::get('/eloquent-save', function () {
     $user = new User;
     $user->name = 'Jane Doe Eloquent';
@@ -226,14 +217,11 @@ Route::get('/eloquent-save', function () {
     return "User berhasil dibuat via save() dengan ID: " . $user->id;
 });
 
-// 2. RETRIEVE / READ
-// a. Mengambil Semua Data (all)
 Route::get('/eloquent-all', function () {
     $users = User::all();
     return response()->json($users);
 });
 
-// b. Mengambil Data Berdasarkan Primary Key (find)
 Route::get('/eloquent-find/{id?}', function ($id = 1) {
     $user = User::find($id);
     if (!$user) {
@@ -242,26 +230,21 @@ Route::get('/eloquent-find/{id?}', function ($id = 1) {
     return response()->json($user);
 });
 
-// c. Menggunakan Query Builder / Where Clause
 Route::get('/eloquent-where', function () {
     $users = User::where('name', 'like', '%John%')->get();
     return response()->json($users);
 });
 
-// d. Menggunakan firstOrFail() (Otomatis 404 jika tidak ditemukan)
 Route::get('/eloquent-first-or-fail', function () {
     $user = User::where('email', 'email_tidak_ada@example.com')->firstOrFail();
     return response()->json($user);
 });
 
-// 3. UPDATE
-// a. Menggunakan update() langsung dari Query
 Route::get('/eloquent-update', function () {
     User::where('name', 'John Doe')->update(['name' => 'John Updated']);
     return "Data user John Doe berhasil diperbarui via update().";
 });
 
-// b. Menggunakan save() pada objek yang ditemukan
 Route::get('/eloquent-save-update/{id?}', function ($id = 1) {
     $user = User::find($id);
     if ($user) {
@@ -272,8 +255,6 @@ Route::get('/eloquent-save-update/{id?}', function ($id = 1) {
     return "User tidak ditemukan.";
 });
 
-// 4. DELETE
-// a. Menggunakan delete() pada objek
 Route::get('/eloquent-delete/{id?}', function ($id = 51) {
     $user = User::find($id);
     if ($user) {
@@ -283,7 +264,6 @@ Route::get('/eloquent-delete/{id?}', function ($id = 51) {
     return "User ID: $id tidak ditemukan.";
 });
 
-// b. Menggunakan destroy() langsung dengan Primary Key
 Route::get('/eloquent-destroy/{id?}', function ($id = 50) {
     $deleted = User::destroy($id);
     if ($deleted) {
@@ -292,64 +272,86 @@ Route::get('/eloquent-destroy/{id?}', function ($id = 50) {
     return "User ID: $id gagal dihapus / tidak ditemukan.";
 });
 
-//acara 19
-// 1. CONDITIONAL CLAUSE
-// a. where()
+// ==========================================
+// ACARA 19: ELOQUENT ORM (PART 2)
+// ==========================================
 Route::get('/eloquent2-where', function () {
     $users = User::where('name', 'like', '%a%')->limit(5)->get(['id', 'name', 'email']);
     return response()->json($users);
 });
 
-// b. orWhere()
 Route::get('/eloquent2-or-where', function () {
     $users = User::where('id', 1)->orWhere('id', 2)->get(['id', 'name', 'email']);
     return response()->json($users);
 });
 
-// c. whereBetween()
 Route::get('/eloquent2-where-between', function () {
     $users = User::whereBetween('id', [1, 5])->get(['id', 'name', 'email']);
     return response()->json($users);
 });
 
-// d. whereIn()
 Route::get('/eloquent2-where-in', function () {
     $users = User::whereIn('id', [1, 3, 5])->get(['id', 'name', 'email']);
     return response()->json($users);
 });
 
-// e. whereNull() & whereNotNull()
 Route::get('/eloquent2-where-null', function () {
     $users = User::whereNull('email_verified_at')->limit(3)->get(['id', 'name', 'email_verified_at']);
     return response()->json($users);
 });
 
-// f. when() - Kondisi Dinamis
 Route::get('/eloquent2-when', function () {
-    $role = 'user'; // parameter kondisi
+    $role = 'user';
     $users = User::when($role, function ($query, $role) {
         return $query->where('id', '>', 0);
     })->limit(3)->get(['id', 'name', 'email']);
     return response()->json($users);
 });
 
-// 2. MUTATORS & ACCESSORS (Pengujian Accessor getNameAttribute)
 Route::get('/eloquent2-accessor/{id?}', function ($id = 1) {
     $user = User::findOrFail($id);
     return "Nama asli diubah Accessor menjadi kapital: " . $user->name;
 });
 
-// 3. QUERY SCOPES (Local Scope scopeActive)
 Route::get('/eloquent2-scope', function () {
     $activeUsers = User::active()->limit(5)->get(['id', 'name', 'email_verified_at']);
     return response()->json($activeUsers);
 });
 
-//acara 20
+// ==========================================
+// ACARA 20: FORM VALIDATION
+// ==========================================
 Route::get('/acara20', [FormValidationController::class, 'index']);
 Route::post('/acara20-proses', [FormValidationController::class, 'store']);
 
-//fallback
+// ==========================================
+// ACARA 21: MIDDLEWARE
+// ==========================================
+Route::get('/acara21/dashboard', function () {
+    return response()->json([
+        'status' => 'Berhasil',
+        'pesan' => 'Selamat datang di Halaman Dashboard Admin!'
+    ]);
+})->middleware('admin:admin');
+
+// ==========================================
+// ACARA 22: LARAVEL BREEZE & AUTHENTICATION
+// ==========================================
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
+
+// ==========================================
+// FALLBACK ROUTE
+// ==========================================
 Route::fallback(function () {
     return "404 - Not Found";
 });
