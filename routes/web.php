@@ -334,9 +334,7 @@ Route::get('/acara21/dashboard', function () {
     ]);
 })->middleware('admin:admin');
 
-// ==========================================
 // ACARA 22: LARAVEL BREEZE & AUTHENTICATION
-// ==========================================
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -348,6 +346,59 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+
+// ACARA 23: AUTHENTICATION
+use Illuminate\Support\Facades\Auth;
+// 1. Mengambil data user yang sedang login via Auth Facade & Auth::id()
+Route::get('/acara23/profil-user', function () {
+    if (Auth::check()) {
+        $user = Auth::user();
+        $userId = Auth::id();
+        return response()->json([
+            'status' => 'Authenticated',
+            'user_id' => $userId,
+            'nama' => $user->name,
+            'email' => $user->email,
+        ]);
+    }
+    return response()->json(['status' => 'Guest', 'pesan' => 'Pengguna belum login.'], 401);
+})->middleware('auth');
+
+// 2. Pengujian Blade Directive @auth dan @guest
+Route::get('/acara23/cek-status', function () {
+    return view('acara23_status');
+});
+
+// ACARA 24: AUTHORIZATION
+use Illuminate\Support\Facades\Gate;
+
+Route::middleware('auth')->group(function () {
+    // 1. Pengujian Gate (Denies vs Allows)
+    Route::get('/acara24/uji-gate', function () {
+        // Simulasi post milik user ID 57 (Della) dan milik user lain (ID 99)
+        $postMilikDella = (object)['id' => 1, 'title' => 'Postingan Della', 'user_id' => 57];
+        $postMilikOrangLain = (object)['id' => 2, 'title' => 'Postingan Orang Lain', 'user_id' => 99];
+
+        $izinPostSendiri = Gate::allows('edit-post', $postMilikDella);
+        $izinPostOrangLain = Gate::allows('edit-post', $postMilikOrangLain);
+
+        return response()->json([
+            'status' => 'Pengujian Gate Otorisasi',
+            'user_aktif' => auth()->user()->name . ' (ID: ' . auth()->id() . ')',
+            'izin_edit_post_sendiri' => $izinPostSendiri ? 'DIIZINKAN (True)' : 'DITOLAK (False)',
+            'izin_edit_post_orang_lain' => $izinPostOrangLain ? 'DIIZINKAN (True)' : 'DITOLAK (False)',
+        ]);
+    });
+
+    // 2. Pengujian Tampilan Blade Directive @can
+    Route::get('/acara24/tampilan-otorisasi', function () {
+        $postMilikDella = (object)['id' => 1, 'title' => 'Tutorial Web Framework Della', 'user_id' => 57];
+        $postMilikOrangLain = (object)['id' => 2, 'title' => 'Artikel Berita Publik', 'user_id' => 99];
+
+        return view('acara24_auth', compact('postMilikDella', 'postMilikOrangLain'));
+    });
+});
 
 // ==========================================
 // FALLBACK ROUTE
