@@ -8,6 +8,7 @@ use App\Http\Controllers\ProdukController;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OrderController;
 
 // ==========================================
 // HALAMAN UTAMA & ROUTING DASAR
@@ -399,6 +400,19 @@ Route::middleware('auth')->group(function () {
         return view('acara24_auth', compact('postMilikDella', 'postMilikOrangLain'));
     });
 });
+
+//acara 29
+Route::resource('book', BookController::class);
+Route::get('/laporan', LaporanPenjualanController::class);
+
+// Rute Produk & Upload Acara 29
+Route::get('/produk', [ProdukController::class, 'index']);
+Route::get('/produk/upload', [ProdukController::class, 'create'])->name('produk.create');
+Route::post('/produk/upload', [ProdukController::class, 'store'])->name('produk.store');
+Route::get('/produk/{id}', [ProdukController::class, 'show'])->whereNumber('id');
+
+//acara 30
+Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
 
 // ==========================================
 // FALLBACK ROUTE
