@@ -414,6 +414,31 @@ Route::get('/produk/{id}', [ProdukController::class, 'show'])->whereNumber('id')
 //acara 30
 Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
 
+//acara 31
+use App\Http\Controllers\ImageManipulationController;
+Route::get('/acara31/image', [ImageManipulationController::class, 'index'])->name('acara31.index');
+Route::post('/acara31/image', [ImageManipulationController::class, 'process'])->name('acara31.process');
+
+//acara 32
+use App\Mail\WelcomeMail;
+use Illuminate\Support\Facades\Mail;
+
+Route::get('/acara32/kirim-email', function () {
+    $user = [
+        'name' => 'Della Gita Permata',
+        'email' => 'dellagita@example.com'
+    ];
+
+    Mail::to($user['email'])->send(new WelcomeMail($user));
+
+    return response()->json([
+        'status' => 'Berhasil',
+        'pesan' => 'Email verifikasi/selamat datang berhasil dikirim melalui mailer log!',
+        'penerima' => $user['email'],
+        'driver' => config('mail.default')
+    ]);
+})->name('acara32.kirim_email');
+
 // ==========================================
 // FALLBACK ROUTE
 // ==========================================
