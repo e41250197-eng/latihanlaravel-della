@@ -439,6 +439,32 @@ Route::get('/acara32/kirim-email', function () {
     ]);
 })->name('acara32.kirim_email');
 
+//acara 31
+use App\Events\OrderPlaced;
+
+Route::get('/acara31/broadcast-order', function () {
+    $order = (object) ['id' => 101, 'total' => 5600000];
+    $user = (object) ['id' => 1, 'name' => 'Della Gita Permata'];
+
+    broadcast(new OrderPlaced($order, $user));
+
+    return response()->json([
+        'status'  => 'Berhasil',
+        'message' => 'Event OrderPlaced berhasil dibroadcast via Laravel Reverb!',
+        'payload' => [
+            'order_id' => $order->id,
+            'user'     => $user->name,
+            'channel'  => 'orders'
+        ]
+    ]);
+})->name('acara31.broadcast');
+
+//acara 32
+use App\Http\Controllers\OrderController2;
+
+Route::get('/acara32/reverb', [OrderController2::class, 'index'])->name('acara32.reverb.index');
+Route::post('/acara32/order', [OrderController2::class, 'store'])->name('acara32.order.store');
+
 // ==========================================
 // FALLBACK ROUTE
 // ==========================================
